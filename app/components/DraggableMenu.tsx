@@ -27,21 +27,6 @@ interface Product {
       url: string
     }
   }
-  model3dRedUsdz?: {
-    asset: {
-      url: string
-    }
-  }
-  model3dGreyUsdz?: {
-    asset: {
-      url: string
-    }
-  }
-  model3dGreenUsdz?: {
-    asset: {
-      url: string
-    }
-  }
   lightMultiplier?: number
 }
 
@@ -57,8 +42,13 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [activeModel, setActiveModel] = useState<string | null>(null)
-  const [activeModelUsdz, setActiveModelUsdz] = useState<string | null>(null)
   const [modelVisible, setModelVisible] = useState(false)
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth <= 767
+    }
+    return false
+  })
   // Default to perspective, can be changed to orthographic
   const [isAxonometric, setIsAxonometric] = useState(false)
   const [hasScrolled, setHasScrolled] = useState(false)
@@ -71,21 +61,33 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
   const hasDraggedRef = useRef(false)
   const initialMousePos = useRef({ x: 0, y: 0 })
 
-  // Preload 3D models on mount
+  // Detect mobile
   useEffect(() => {
-    // Preload all 3D models for all color variants
-    initialProducts.forEach(product => {
-      if (product.model3dRed?.asset.url) {
-        useGLTF.preload(product.model3dRed.asset.url)
-      }
-      if (product.model3dGrey?.asset.url) {
-        useGLTF.preload(product.model3dGrey.asset.url)
-      }
-      if (product.model3dGreen?.asset.url) {
-        useGLTF.preload(product.model3dGreen.asset.url)
-      }
-    })
-  }, [initialProducts])
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 767)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Preload 3D models on mount (desktop only)
+  useEffect(() => {
+    if (!isMobile) {
+      // Preload all 3D models for all color variants
+      initialProducts.forEach(product => {
+        if (product.model3dRed?.asset.url) {
+          useGLTF.preload(product.model3dRed.asset.url)
+        }
+        if (product.model3dGrey?.asset.url) {
+          useGLTF.preload(product.model3dGrey.asset.url)
+        }
+        if (product.model3dGreen?.asset.url) {
+          useGLTF.preload(product.model3dGreen.asset.url)
+        }
+      })
+    }
+  }, [initialProducts, isMobile])
 
   // Initialize position at bottom left, hidden below viewport (or above on mobile)
   useEffect(() => {
@@ -180,27 +182,11 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
     }
   }
 
-  // Helper function to get the USDZ model URL based on selected color
-  const getModelUrlUsdz = (product: Product, color: ColorVariant): string | null => {
-    switch (color) {
-      case 'red':
-        return product.model3dRedUsdz?.asset.url || null
-      case 'grey':
-        return product.model3dGreyUsdz?.asset.url || null
-      case 'green':
-        return product.model3dGreenUsdz?.asset.url || null
-      default:
-        return null
-    }
-  }
-
-  // Helper function to set active model and USDZ model
+  // Helper function to set active model
   const setActiveModels = (product: Product, color: ColorVariant) => {
     const modelUrl = getModelUrl(product, color)
-    const modelUrlUsdz = getModelUrlUsdz(product, color)
     if (modelUrl) {
       setActiveModel(modelUrl)
-      setActiveModelUsdz(modelUrlUsdz)
     }
   }
 
@@ -304,144 +290,148 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
             onDragStart={(e) => e.preventDefault()}
             loading="lazy"
           />
-          <div className="menu-buttons">
-            <button 
-              className="menu-button"
-              onClick={(e) => {
-                e.stopPropagation()
-                
-                if (hasDraggedRef.current) {
-                  hasDraggedRef.current = false
-                  return
-                }
-                
-                if (activeModel) {
-                  setModelVisible(!modelVisible)
-                } else {
-                  // If no model is active, load the first product
-                  if (products.length > 0) {
-                    const firstProduct = products[0]
+          {!isMobile && (
+            <>
+              <div className="menu-buttons">
+                <button 
+                  className="menu-button"
+                  onClick={(e) => {
+                    e.stopPropagation()
                     
-                    // Try to find any available model variant
-                    let modelUrl = getModelUrl(firstProduct, selectedColor)
+                    if (hasDraggedRef.current) {
+                      hasDraggedRef.current = false
+                      return
+                    }
                     
-                    if (!modelUrl) {
-                      // Try red, grey, green in order
-                      const colors: ColorVariant[] = ['red', 'grey', 'green']
-                      for (const color of colors) {
-                        modelUrl = getModelUrl(firstProduct, color)
+                    if (activeModel) {
+                      setModelVisible(!modelVisible)
+                    } else {
+                      // If no model is active, load the first product
+                      if (products.length > 0) {
+                        const firstProduct = products[0]
+                        
+                        // Try to find any available model variant
+                        let modelUrl = getModelUrl(firstProduct, selectedColor)
+                        
+                        if (!modelUrl) {
+                          // Try red, grey, green in order
+                          const colors: ColorVariant[] = ['red', 'grey', 'green']
+                          for (const color of colors) {
+                            modelUrl = getModelUrl(firstProduct, color)
+                            if (modelUrl) {
+                              setSelectedColor(color)
+                              break
+                            }
+                          }
+                        }
+                        
                         if (modelUrl) {
-                          setSelectedColor(color)
-                          break
+                          setActiveProductId(firstProduct._id)
+                          setActiveModels(firstProduct, selectedColor)
+                          setModelVisible(true)
                         }
                       }
                     }
-                    
-                    if (modelUrl) {
-                      setActiveProductId(firstProduct._id)
-                      setActiveModels(firstProduct, selectedColor)
-                      setModelVisible(true)
+                  }}
+                >
+                  3D View: {modelVisible ? 'On' : 'Off'}
+                </button>
+                <button 
+                  className="menu-button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (hasDraggedRef.current) {
+                      hasDraggedRef.current = false
+                      return
                     }
-                  }
-                }
-              }}
-            >
-              3D View: {modelVisible ? 'On' : 'Off'}
-            </button>
-            <button 
-              className="menu-button"
-              onClick={(e) => {
-                e.stopPropagation()
-                if (hasDraggedRef.current) {
-                  hasDraggedRef.current = false
-                  return
-                }
-                setIsAxonometric(!isAxonometric)
-              }}
-            >
-              Viz: {isAxonometric ? 'Ortho' : 'Perspective'}
-            </button>
-          </div>
-          <div className="menu-buttons">
-            <button 
-              className="menu-button"
-              style={{
-                backgroundColor: modelVisible && selectedColor === 'red' ? '#772524' : 'white',
-                color: modelVisible && selectedColor === 'red' ? 'transparent' : '#000',
-              }}
-              onClick={(e) => {
-                e.stopPropagation()
-                if (hasDraggedRef.current) {
-                  hasDraggedRef.current = false
-                  return
-                }
-                setSelectedColor('red')
-                // If a product is active, switch to its red variant and show the view
-                if (activeProductId) {
-                  const product = products.find(p => p._id === activeProductId)
-                  if (product) {
-                    setActiveModels(product, 'red')
-                    setModelVisible(true)
-                  }
-                }
-              }}
-            >
-              Red
-            </button>
-            <button 
-              className="menu-button"
-              style={{
-                backgroundColor: modelVisible && selectedColor === 'grey' ? '#ACB2B4' : 'white',
-                color: modelVisible && selectedColor === 'grey' ? 'transparent' : '#000',
-              }}
-              onClick={(e) => {
-                e.stopPropagation()
-                if (hasDraggedRef.current) {
-                  hasDraggedRef.current = false
-                  return
-                }
-                setSelectedColor('grey')
-                // If a product is active, switch to its grey variant and show the view
-                if (activeProductId) {
-                  const product = products.find(p => p._id === activeProductId)
-                  if (product) {
-                    setActiveModels(product, 'grey')
-                    setModelVisible(true)
-                  }
-                }
-              }}
-            >
-              Steel
-            </button>
-            <button 
-              className="menu-button"
-              style={{
-                backgroundColor: modelVisible && selectedColor === 'green' ? '#243225' : 'white',
-                color: modelVisible && selectedColor === 'green' ? 'transparent' : '#000',
-              }}
-              onClick={(e) => {
-                e.stopPropagation()
-                if (hasDraggedRef.current) {
-                  hasDraggedRef.current = false
-                  return
-                }
-                setSelectedColor('green')
-                // If a product is active, switch to its green variant and show the view
-                if (activeProductId) {
-                  const product = products.find(p => p._id === activeProductId)
-                  if (product) {
-                    setActiveModels(product, 'green')
-                    setModelVisible(true)
-                  }
-                }
-              }}
-            >
-              Green
-            </button>
-          </div>
+                    setIsAxonometric(!isAxonometric)
+                  }}
+                >
+                  Viz: {isAxonometric ? 'Ortho' : 'Perspective'}
+                </button>
+              </div>
+              <div className="menu-buttons">
+                <button 
+                  className="menu-button"
+                  style={{
+                    backgroundColor: modelVisible && selectedColor === 'red' ? '#772524' : 'white',
+                    color: modelVisible && selectedColor === 'red' ? 'transparent' : '#000',
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (hasDraggedRef.current) {
+                      hasDraggedRef.current = false
+                      return
+                    }
+                    setSelectedColor('red')
+                    // If a product is active, switch to its red variant and show the view
+                    if (activeProductId) {
+                      const product = products.find(p => p._id === activeProductId)
+                      if (product) {
+                        setActiveModels(product, 'red')
+                        setModelVisible(true)
+                      }
+                    }
+                  }}
+                >
+                  Red
+                </button>
+                <button 
+                  className="menu-button"
+                  style={{
+                    backgroundColor: modelVisible && selectedColor === 'grey' ? '#ACB2B4' : 'white',
+                    color: modelVisible && selectedColor === 'grey' ? 'transparent' : '#000',
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (hasDraggedRef.current) {
+                      hasDraggedRef.current = false
+                      return
+                    }
+                    setSelectedColor('grey')
+                    // If a product is active, switch to its grey variant and show the view
+                    if (activeProductId) {
+                      const product = products.find(p => p._id === activeProductId)
+                      if (product) {
+                        setActiveModels(product, 'grey')
+                        setModelVisible(true)
+                      }
+                    }
+                  }}
+                >
+                  Steel
+                </button>
+                <button 
+                  className="menu-button"
+                  style={{
+                    backgroundColor: modelVisible && selectedColor === 'green' ? '#243225' : 'white',
+                    color: modelVisible && selectedColor === 'green' ? 'transparent' : '#000',
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (hasDraggedRef.current) {
+                      hasDraggedRef.current = false
+                      return
+                    }
+                    setSelectedColor('green')
+                    // If a product is active, switch to its green variant and show the view
+                    if (activeProductId) {
+                      const product = products.find(p => p._id === activeProductId)
+                      if (product) {
+                        setActiveModels(product, 'green')
+                        setModelVisible(true)
+                      }
+                    }
+                  }}
+                >
+                  Green
+                </button>
+              </div>
+            </>
+          )}
           <div className="menu-buttons">
             <a 
-              href="mailto:info@f-a-m-m.com"
+              href="mailto:fammdesign00@gmail.com"
               className="menu-button menu-button-full"
               onClick={(e) => {
                 e.stopPropagation()
@@ -451,7 +441,7 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
             </a>
           </div>
         </div>
-        {products.length > 0 && (
+        {!isMobile && products.length > 0 && (
           <div className="product-outlines-inline">
             {products.map((product) => (
               <div 
@@ -491,10 +481,9 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
           </div>
         )}
       </div>
-      {activeModel && (
+      {!isMobile && activeModel && (
         <Model3DViewer 
           modelUrl={activeModel}
-          modelUrlUsdz={activeModelUsdz || undefined}
           onClose={() => setModelVisible(false)}
           isAxonometric={isAxonometric}
           visible={modelVisible}

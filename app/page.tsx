@@ -100,15 +100,22 @@ export default async function Home() {
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'FAMM Design Studio',
-    alternateName: ['FAMM', 'f-a-m-m', 'Famm Design'],
-    description: 'Product design collective and industrial design studio based in Milan, working across industrial and creative fields.',
+    name: 'FAMM',
+    alternateName: ['FAMM Design Studio', 'f-a-m-m', 'Famm Design'],
+    description: 'FAMM, product design collective founded in 2024 working across industrial design and creative fields. Based in Milan, founded by Matteo Bulla, Matteo Corradini, Federico Fanucchi & Andrea Mastroianni.',
+    foundingDate: '2024',
     url: process.env.NEXT_PUBLIC_SITE_URL || 'https://f-a-m-m.com',
     address: {
       '@type': 'PostalAddress',
       addressLocality: 'Milan',
       addressCountry: 'IT',
     },
+    founder: [
+      { '@type': 'Person', name: 'Matteo Bulla' },
+      { '@type': 'Person', name: 'Matteo Corradini' },
+      { '@type': 'Person', name: 'Federico Fanucchi' },
+      { '@type': 'Person', name: 'Andrea Mastroianni' },
+    ],
     sameAs: [
       // Add your social media URLs here when available
       // 'https://www.instagram.com/fammdesign',
@@ -138,11 +145,17 @@ export default async function Home() {
       <main>
         {/* SEO: Hidden title and subtitle for search engines */}
         <h1 className="visually-hidden">
-          FAMM Design Studio - Industrial Design Milano | F-a-m-m
+          FAMM - Product Design Collective | Industrial Design Milano
         </h1>
         <h2 className="visually-hidden">
-          Famm Design Studio - Product Design Collective and Industrial Design Studio in Milan
+          FAMM, product design collective founded in 2024 working across industrial design and creative fields. Based in Milan, founded by Matteo Bulla, Matteo Corradini, Federico Fanucchi & Andrea Mastroianni.
         </h2>
+        
+        {/* SEO: Subtitle text for search engines (hidden but readable) */}
+        <p className="visually-hidden">
+          FAMM, product design collective founded in 2024 working across industrial design and creative fields. Based in Milan, founded by Matteo Bulla, Matteo Corradini, Federico Fanucchi & Andrea Mastroianni.
+        </p>
+        
         <img 
           src="/logo/logo.svg" 
           alt="FAMM Design Studio Logo - Industrial Design Milano" 

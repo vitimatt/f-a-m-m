@@ -5,9 +5,9 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'FAMM Design Studio | Industrial Design Milano | F-a-m-m',
-  description: 'FAMM is a product design collective and industrial design studio based in Milan. We work across industrial and creative fields, combining problem-solving design with future-focused exploration.',
-  keywords: 'FAMM, f-a-m-m, Famm Design, Famm design studio, industrial design studio, design studio milan, Design Industriale milano, Famm',
+  title: 'FAMM',
+  description: 'FAMM, product design collective founded in 2024 working across industrial design and creative fields. Based in Milan, founded by Matteo Bulla, Matteo Corradini, Federico Fanucchi & Andrea Mastroianni.',
+  keywords: 'FAMM, f-a-m-m, Famm Design, Famm design studio, industrial design studio, design studio milan, Design Industriale milano, Famm, Matteo Bulla, Matteo Corradini, Federico Fanucchi, Andrea Mastroianni',
   authors: [{ name: 'FAMM Design Studio' }],
   creator: 'FAMM Design Studio',
   publisher: 'FAMM Design Studio',
@@ -16,16 +16,16 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'FAMM Design Studio | Industrial Design Milano',
-    description: 'A product design collective working across industrial and creative fields in Milan.',
+    title: 'FAMM',
+    description: 'FAMM, product design collective founded in 2024 working across industrial design and creative fields. Based in Milan, founded by Matteo Bulla, Matteo Corradini, Federico Fanucchi & Andrea Mastroianni.',
     type: 'website',
     locale: 'en_US',
-    siteName: 'FAMM Design Studio',
+    siteName: 'FAMM',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'FAMM Design Studio | Industrial Design Milano',
-    description: 'A product design collective working across industrial and creative fields in Milan.',
+    title: 'FAMM',
+    description: 'FAMM, product design collective founded in 2024 working across industrial design and creative fields. Based in Milan, founded by Matteo Bulla, Matteo Corradini, Federico Fanucchi & Andrea Mastroianni.',
   },
   robots: {
     index: true,

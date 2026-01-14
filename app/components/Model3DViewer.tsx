@@ -7,73 +7,10 @@ import * as THREE from 'three'
 
 interface Model3DViewerProps {
   modelUrl: string
-  modelUrlUsdz?: string
   onClose: () => void
   isAxonometric: boolean
   visible: boolean
   lightMultiplier?: number
-}
-
-// Detect iOS devices
-function isIOS(): boolean {
-  if (typeof window === 'undefined') return false
-  return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-         (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-}
-
-// USDZ Viewer Component for iOS
-function USDZViewer({ url, onClose }: { url: string; onClose: () => void }) {
-  useEffect(() => {
-    // Load model-viewer script if not already loaded
-    if (typeof window !== 'undefined' && !document.querySelector('script[src*="model-viewer"]')) {
-      const script = document.createElement('script')
-      script.type = 'module'
-      script.src = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js'
-      document.head.appendChild(script)
-    }
-  }, [])
-
-  return (
-    <div style={{ 
-      width: '100%', 
-      height: '100%', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      position: 'relative',
-      backgroundColor: 'transparent'
-    }}>
-      {/* @ts-ignore - model-viewer is a web component */}
-      <model-viewer
-        src={url}
-        alt="3D Model"
-        ar
-        ar-modes="webxr scene-viewer quick-look"
-        camera-controls
-        style={{ width: '100%', height: '100%' }}
-        interaction-policy="allow-when-focused"
-      />
-      <button
-        onClick={onClose}
-        style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          padding: '10px 20px',
-          backgroundColor: 'rgba(255, 255, 255, 0.9)',
-          color: 'black',
-          border: 'none',
-          cursor: 'pointer',
-          borderRadius: '4px',
-          zIndex: 1000,
-          fontSize: '14px',
-          fontWeight: '500'
-        }}
-      >
-        Close
-      </button>
-    </div>
-  )
 }
 
 // Transform Sanity file URL to ensure it's accessible
@@ -341,16 +278,11 @@ class ModelErrorBoundary extends React.Component<
   }
 }
 
-export default function Model3DViewer({ modelUrl, modelUrlUsdz, onClose, isAxonometric, visible, lightMultiplier = 1.0 }: Model3DViewerProps) {
+export default function Model3DViewer({ modelUrl, onClose, isAxonometric, visible, lightMultiplier = 1.0 }: Model3DViewerProps) {
   const [isMobile, setIsMobile] = useState(false)
-  const [isIOSDevice, setIsIOSDevice] = useState(false)
   const [retryKey, setRetryKey] = useState(0)
 
   // Component stays mounted, just visibility changes
-
-  useEffect(() => {
-    setIsIOSDevice(isIOS())
-  }, [])
 
   useEffect(() => {
     const checkMobile = () => {
@@ -371,17 +303,9 @@ export default function Model3DViewer({ modelUrl, modelUrlUsdz, onClose, isAxono
       }}
       fallback={null}
     >
-      {/* Use USDZ viewer on iOS if USDZ URL is available */}
-      {isIOSDevice && modelUrlUsdz ? (
-        <div className="model-viewer-overlay" style={{ display: visible ? 'flex' : 'none', pointerEvents: visible ? 'auto' : 'none' }}>
-          <div className="model-viewer-container">
-            <USDZViewer url={modelUrlUsdz} onClose={onClose} />
-          </div>
-        </div>
-      ) : (
-        <div className="model-viewer-overlay" style={{ display: visible ? 'flex' : 'none', pointerEvents: visible ? 'auto' : 'none' }}>
-          <div className="model-viewer-container">
-            <Canvas 
+      <div className="model-viewer-overlay" style={{ display: visible ? 'flex' : 'none', pointerEvents: visible ? 'auto' : 'none' }}>
+        <div className="model-viewer-container">
+          <Canvas 
               key={`canvas-${modelUrl}`}
             camera={isAxonometric ? { position: [0, 0, 1] } : { position: [0, 0, 1], fov: 50 }} 
             style={{ background: 'transparent', pointerEvents: isMobile ? 'none' : 'auto' }}
@@ -453,9 +377,8 @@ export default function Model3DViewer({ modelUrl, modelUrlUsdz, onClose, isAxono
               {!isMobile && <OrbitControls enableZoom={false} enablePan={false} />}
             </Suspense>
           </Canvas>
-          </div>
         </div>
-      )}
+      </div>
     </ModelErrorBoundary>
   )
 }

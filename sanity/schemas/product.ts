@@ -16,7 +16,7 @@ export default defineType({
       title: '3D Model (Red)',
       type: 'file',
       options: {
-        accept: '.glb,.gltf,.obj,.fbx,.usdz',
+        accept: '.glb,.gltf,.obj,.fbx',
       },
     }),
     defineField({
@@ -24,7 +24,7 @@ export default defineType({
       title: '3D Model (Grey)',
       type: 'file',
       options: {
-        accept: '.glb,.gltf,.obj,.fbx,.usdz',
+        accept: '.glb,.gltf,.obj,.fbx',
       },
     }),
     defineField({
@@ -32,35 +32,8 @@ export default defineType({
       title: '3D Model (Green)',
       type: 'file',
       options: {
-        accept: '.glb,.gltf,.obj,.fbx,.usdz',
+        accept: '.glb,.gltf,.obj,.fbx',
       },
-    }),
-    defineField({
-      name: 'model3dRedUsdz',
-      title: '3D Model USDZ (Red) - iOS Mobile',
-      type: 'file',
-      options: {
-        accept: '.usdz',
-      },
-      description: 'USDZ format optimized for iOS devices (optional, falls back to GLB if not provided)',
-    }),
-    defineField({
-      name: 'model3dGreyUsdz',
-      title: '3D Model USDZ (Grey) - iOS Mobile',
-      type: 'file',
-      options: {
-        accept: '.usdz',
-      },
-      description: 'USDZ format optimized for iOS devices (optional, falls back to GLB if not provided)',
-    }),
-    defineField({
-      name: 'model3dGreenUsdz',
-      title: '3D Model USDZ (Green) - iOS Mobile',
-      type: 'file',
-      options: {
-        accept: '.usdz',
-      },
-      description: 'USDZ format optimized for iOS devices (optional, falls back to GLB if not provided)',
     }),
     defineField({
       name: 'svgOutline',

@@ -146,6 +146,10 @@ function Model({ url, isAxonometric, isMobile, onError, retryKey }: { url: strin
   // Transform URL to ensure it's accessible
   const transformedUrl = transformSanityUrl(url, isMobile)
   
+  // All hooks must be called unconditionally at the top level
+  const groupRef = useRef<THREE.Group>(null)
+  const gyroData = useRef({ alpha: 0, beta: 0, gamma: 0 })
+  
   // For mobile, pre-check URL accessibility on first load
   useEffect(() => {
     if (isMobile && retryKey === 0) {
@@ -158,23 +162,6 @@ function Model({ url, isAxonometric, isMobile, onError, retryKey }: { url: strin
       })
     }
   }, [isMobile, transformedUrl, retryKey, onError])
-  
-  let gltf
-  try {
-    // useGLTF will handle loading with Suspense
-    gltf = useGLTF(transformedUrl)
-  } catch (error) {
-    console.error('GLTF loading error:', error)
-    if (onError) {
-      const errorMessage = error instanceof Error ? error.message : String(error)
-      onError(new Error(`Failed to load 3D model: ${errorMessage}`))
-    }
-    return null
-  }
-  
-  const scale = isAxonometric ? 0.01 : 1
-  const groupRef = useRef<THREE.Group>(null)
-  const gyroData = useRef({ alpha: 0, beta: 0, gamma: 0 })
 
   useFrame(() => {
     if (groupRef.current && isMobile) {
@@ -241,6 +228,10 @@ function Model({ url, isAxonometric, isMobile, onError, retryKey }: { url: strin
       }
     }
   }, [isMobile])
+
+  // useGLTF must be called unconditionally - it will throw if URL is invalid, which Suspense will catch
+  const gltf = useGLTF(transformedUrl)
+  const scale = isAxonometric ? 0.01 : 1
 
   try {
     return (

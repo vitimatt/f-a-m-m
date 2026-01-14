@@ -22,7 +22,17 @@ export default function ImageSlider({ images }: ImageSliderProps) {
   const [showHint, setShowHint] = useState<'prev' | 'next' | null>(null)
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const [isVisible, setIsVisible] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const sliderRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 767)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -63,6 +73,7 @@ export default function ImageSlider({ images }: ImageSliderProps) {
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (isMobile) return
     const rect = e.currentTarget.getBoundingClientRect()
     const x = e.clientX - rect.left
     const isLeftHalf = x < rect.width / 2
@@ -74,8 +85,8 @@ export default function ImageSlider({ images }: ImageSliderProps) {
     <div 
       ref={sliderRef}
       className={`image-slider ${isVisible ? 'image-revealed' : ''}`}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={() => setShowHint(null)}
+      onMouseMove={!isMobile ? handleMouseMove : undefined}
+      onMouseLeave={!isMobile ? () => setShowHint(null) : undefined}
       style={aspectRatio ? { aspectRatio: aspectRatio.toString() } : undefined}
     >
       <div
@@ -86,7 +97,7 @@ export default function ImageSlider({ images }: ImageSliderProps) {
         className="slider-right"
         onClick={goToNext}
       />
-      {showHint && images.length > 1 && (
+      {!isMobile && showHint && images.length > 1 && (
         <span 
           className="slider-hint"
           style={{
@@ -99,8 +110,9 @@ export default function ImageSlider({ images }: ImageSliderProps) {
       )}
       <img 
         src={images[currentIndex]?.asset.url} 
-        alt={images[currentIndex]?.alt || ''} 
+        alt={images[currentIndex]?.alt || 'Design work by FAMM Design Studio'} 
         className="slider-image"
+        loading="lazy"
       />
       <div className="image-overlay" />
     </div>

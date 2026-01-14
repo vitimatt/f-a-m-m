@@ -26,6 +26,21 @@ interface Product {
       url: string
     }
   }
+  model3dRedUsdz?: {
+    asset: {
+      url: string
+    }
+  }
+  model3dGreyUsdz?: {
+    asset: {
+      url: string
+    }
+  }
+  model3dGreenUsdz?: {
+    asset: {
+      url: string
+    }
+  }
 }
 
 async function getProducts() {
@@ -53,6 +68,21 @@ async function getProducts() {
           asset-> {
             url
           }
+        },
+        model3dRedUsdz {
+          asset-> {
+            url
+          }
+        },
+        model3dGreyUsdz {
+          asset-> {
+            url
+          }
+        },
+        model3dGreenUsdz {
+          asset-> {
+            url
+          }
         }
       }`
     )
@@ -66,18 +96,63 @@ async function getProducts() {
 export default async function Home() {
   const products = await getProducts()
 
+  // Structured data for SEO (JSON-LD)
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'FAMM Design Studio',
+    alternateName: ['FAMM', 'f-a-m-m', 'Famm Design'],
+    description: 'Product design collective and industrial design studio based in Milan, working across industrial and creative fields.',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://f-a-m-m.com',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Milan',
+      addressCountry: 'IT',
+    },
+    sameAs: [
+      // Add your social media URLs here when available
+      // 'https://www.instagram.com/fammdesign',
+      // 'https://www.linkedin.com/company/fammdesign',
+    ],
+    areaServed: {
+      '@type': 'Country',
+      name: 'Italy',
+    },
+    knowsAbout: [
+      'Industrial Design',
+      'Product Design',
+      'Design Studio',
+      'Manufacturing Design',
+      'Creative Design',
+    ],
+  }
+
   return (
     <>
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
       <div className="white-fade-overlay" />
       <main>
+        {/* SEO: Hidden title and subtitle for search engines */}
+        <h1 className="visually-hidden">
+          FAMM Design Studio - Industrial Design Milano | F-a-m-m
+        </h1>
+        <h2 className="visually-hidden">
+          Famm Design Studio - Product Design Collective and Industrial Design Studio in Milan
+        </h2>
         <img 
           src="/logo/logo.svg" 
-          alt="Logo" 
+          alt="FAMM Design Studio Logo - Industrial Design Milano" 
           className="logo"
+          width="200"
+          height="50"
         />
         <div className="top-right-text">
           <TypingText 
-            text="Radical, curious, and always ahead of the curve. Kunsthalle Basel is one of the leading institutions for contemporary art in Europe and beyond. It pushes boundaries, gives space to new, bold voices, and always places the artists at the center. Since 1839, the Basler Kunstverein hasn't just shown art; it has continually redefined it. With an unwavering commitment to emerging artists, the Basler Kunstverein initiated the construction of Kunsthalle Basel, which opened its doors to the public in 1872. To this day, Kunsthalle Basel continues to bring groundbreaking artistic positions to the forefront, long before they make it big elsewhere. A space for everyone who wants to not just see art, but question, experience, and debate it. Come and discover the artists of tomorrow — already today! Radical, curious, and always ahead of the curve. Kunsthalle Basel is one of the leading institutions for contemporary art in Europe and beyond. It pushes boundaries, gives space to new, bold voices, and always places the artists at the center."
+            text="We're a product design collective working across industrial and creative fields. Our work sits at the intersection of innovation and experimentation, to explore how forward-thinking companies can thrive amidst exponential technological change. We combine problem-solving design with future-focused exploration, approaching every challenge with a manufacturing-oriented mindset. Our goal is to not only answer today's questions, but to design what comes next."
             delay={2000}
             speed={15}
           />

@@ -5,6 +5,19 @@
   font-style: normal;
 }
 
+/* Visually hidden but accessible to screen readers and SEO */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -193,6 +206,12 @@ body {
   background: white;
 }
 
+a.menu-button {
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+}
+
 .product-outlines-inline {
   display: flex;
   height: 100%;
@@ -246,7 +265,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 7px;
-  padding: 7px 7px 0;
+  padding: 7px 7px 7px;
   margin-top: calc(300vw * 413 / 3985 + 7px);
 }
 
@@ -403,12 +422,43 @@ body {
 
 /* Mobile Styles */
 @media (max-width: 767px) {
+  html {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  body {
+    font-size: 15px;
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  main {
+    overflow-x: hidden;
+    max-width: 100vw;
+    position: relative;
+  }
+
+  .top-right-text p {
+    font-size: 15px;
+  }
+
+  .menu-button {
+    font-size: 15px;
+  }
+
+  .article-text {
+    font-size: 15px;
+  }
+
+
   .logo {
     position: absolute;
     top: 7px;
     left: 7px;
     width: 600vw;
     height: auto;
+    clip-path: polygon(0 0, 100vw 0, 100vw 100%, 0 100%);
   }
 
   .top-right-text {
@@ -420,17 +470,44 @@ body {
   }
 
   .articles-layout {
-    margin-top: calc(600vw * 413 / 3985 + 350px);
+    margin-top: calc(600vw * 413 / 3985 + 275px);
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 50px;
+    padding-bottom: 50px;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   .articles-left-center {
     grid-column: 1;
   }
 
+  .articles-column {
+    overflow-y: visible !important;
+    height: auto !important;
+    gap: 50px !important;
+  }
+
   .product-outlines-inline {
     display: none;
+  }
+
+  /* Menu on mobile - full width inside right margins */
+  .draggable-menu {
+    left: 7px !important;
+    right: 7px;
+    width: calc(100vw - 14px) !important;
+    max-width: calc(100vw - 14px) !important;
+  }
+
+  .menu-content {
+    width: 100% !important;
+  }
+
+  .menu-content img {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
   }
 
   .model-viewer-overlay {
@@ -439,6 +516,85 @@ body {
 
   .model-viewer-container {
     pointer-events: none;
+  }
+
+  /* News article images - 100vw minus margins, preserving aspect ratio */
+  .news-article {
+    overflow-x: hidden;
+    overflow-y: hidden !important;
+    height: auto !important;
+  }
+
+  .news-article .article-content-wrapper {
+    overflow-y: hidden !important;
+    height: auto !important;
+  }
+
+  .news-article .article-images-container,
+  .news-article .article-images-side {
+    width: calc(100vw - 14px) !important;
+    max-width: calc(100vw - 14px) !important;
+    margin-left: calc(-50vw + 50% + 7px);
+    margin-right: calc(-50vw + 50% + 7px);
+    height: auto !important;
+    overflow-x: hidden;
+    overflow-y: hidden !important;
+  }
+
+  .news-article .article-images-container .image-slider,
+  .news-article .article-images-side .image-slider {
+    width: calc(100vw - 14px) !important;
+    max-width: calc(100vw - 14px) !important;
+    height: auto !important;
+    overflow: hidden !important;
+  }
+
+  .news-article .article-images-container .slider-image,
+  .news-article .article-images-side .slider-image {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    object-fit: contain;
+  }
+
+  /* Stack side-by-side layouts vertically on mobile */
+  .news-article.layout-text-left-img-right .article-content-wrapper,
+  .news-article.layout-text-right-img-left .article-content-wrapper {
+    grid-template-columns: 1fr;
+    gap: 7px;
+  }
+
+  /* Reorder images before text on mobile for all articles */
+  .product-article {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .product-article .article-text {
+    order: 2;
+    margin-top: 7px;
+  }
+
+  .product-article .article-spacer {
+    order: 1;
+  }
+
+  .product-article .image-slider {
+    order: 1;
+  }
+
+  /* Reorder text-left-img-right layout to show images first */
+  .news-article.layout-text-left-img-right .article-content-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .news-article.layout-text-left-img-right .article-images-side {
+    order: 1;
+  }
+
+  .news-article.layout-text-left-img-right .article-text {
+    order: 2;
   }
 }
 

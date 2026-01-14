@@ -36,12 +36,47 @@ export default defineType({
       },
     }),
     defineField({
+      name: 'model3dRedUsdz',
+      title: '3D Model USDZ (Red) - iOS Mobile',
+      type: 'file',
+      options: {
+        accept: '.usdz',
+      },
+      description: 'USDZ format optimized for iOS devices (optional, falls back to GLB if not provided)',
+    }),
+    defineField({
+      name: 'model3dGreyUsdz',
+      title: '3D Model USDZ (Grey) - iOS Mobile',
+      type: 'file',
+      options: {
+        accept: '.usdz',
+      },
+      description: 'USDZ format optimized for iOS devices (optional, falls back to GLB if not provided)',
+    }),
+    defineField({
+      name: 'model3dGreenUsdz',
+      title: '3D Model USDZ (Green) - iOS Mobile',
+      type: 'file',
+      options: {
+        accept: '.usdz',
+      },
+      description: 'USDZ format optimized for iOS devices (optional, falls back to GLB if not provided)',
+    }),
+    defineField({
       name: 'svgOutline',
       title: 'SVG Outline',
       type: 'file',
       options: {
         accept: '.svg',
       },
+    }),
+    defineField({
+      name: 'lightMultiplier',
+      title: 'Light Multiplier',
+      type: 'number',
+      description: 'Multiplier for the strength of all lights (default: 1.0). Increase to make the scene brighter, decrease to make it darker.',
+      initialValue: 1.0,
+      validation: (Rule) => Rule.min(0).max(10),
     }),
   ],
   preview: {

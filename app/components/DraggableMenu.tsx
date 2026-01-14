@@ -27,6 +27,22 @@ interface Product {
       url: string
     }
   }
+  model3dRedUsdz?: {
+    asset: {
+      url: string
+    }
+  }
+  model3dGreyUsdz?: {
+    asset: {
+      url: string
+    }
+  }
+  model3dGreenUsdz?: {
+    asset: {
+      url: string
+    }
+  }
+  lightMultiplier?: number
 }
 
 type ColorVariant = 'red' | 'grey' | 'green'
@@ -39,10 +55,11 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
   const [position, setPosition] = useState({ x: 14, y: typeof window !== 'undefined' ? window.innerHeight + 500 : 2000 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
-  const [showInfo, setShowInfo] = useState(false)
   const [products, setProducts] = useState<Product[]>(initialProducts)
   const [activeModel, setActiveModel] = useState<string | null>(null)
+  const [activeModelUsdz, setActiveModelUsdz] = useState<string | null>(null)
   const [modelVisible, setModelVisible] = useState(false)
+  // Default to perspective, can be changed to orthographic
   const [isAxonometric, setIsAxonometric] = useState(false)
   const [hasScrolled, setHasScrolled] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
@@ -53,14 +70,9 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
   const menuRef = useRef<HTMLDivElement>(null)
   const hasDraggedRef = useRef(false)
   const initialMousePos = useRef({ x: 0, y: 0 })
-  const [debugInfo, setDebugInfo] = useState('')
-  const [showDebug, setShowDebug] = useState(false)
 
   // Preload 3D models on mount
   useEffect(() => {
-    console.log('Products received:', initialProducts.length)
-    setDebugInfo(`Products loaded: ${initialProducts.length}\nTitles: ${initialProducts.map(p => p.title).join(', ')}`)
-    
     // Preload all 3D models for all color variants
     initialProducts.forEach(product => {
       if (product.model3dRed?.asset.url) {
@@ -75,12 +87,19 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
     })
   }, [initialProducts])
 
-  // Initialize position at bottom left, hidden below viewport
+  // Initialize position at bottom left, hidden below viewport (or above on mobile)
   useEffect(() => {
     if (!isInitialized && menuRef.current) {
       const windowHeight = window.innerHeight
       const menuHeight = menuRef.current.offsetHeight || 0
-      setPosition({ x: 14, y: windowHeight + 20 })
+      const isMobile = window.innerWidth <= 767
+      if (isMobile) {
+        // On mobile, start above viewport, left aligned to margin
+        setPosition({ x: 7, y: -menuHeight - 20 })
+      } else {
+        // On desktop, start below viewport
+        setPosition({ x: 14, y: windowHeight + 20 })
+      }
       setIsInitialized(true)
     }
   }, [isInitialized, products])
@@ -90,7 +109,13 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
     const handleResize = () => {
       if (!hasScrolled && menuRef.current) {
         const windowHeight = window.innerHeight
-        setPosition({ x: 14, y: windowHeight + 20 })
+        const menuHeight = menuRef.current.offsetHeight || 0
+        const isMobileNow = window.innerWidth <= 767
+        if (isMobileNow) {
+          setPosition({ x: 7, y: -menuHeight - 20 })
+        } else {
+          setPosition({ x: 14, y: windowHeight + 20 })
+        }
       }
     }
     
@@ -98,19 +123,41 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
     return () => window.removeEventListener('resize', handleResize)
   }, [hasScrolled])
 
-  // Handle scroll to slide in menu
+  // Handle scroll to slide in/out menu
   useEffect(() => {
     const handleScroll = () => {
+      const windowHeight = window.innerHeight
+      const menuHeight = menuRef.current?.offsetHeight || 0
+      const isMobileNow = window.innerWidth <= 767
+      
       if (!hasScrolled && window.scrollY > 0) {
+        // Slide in on first scroll down
         setHasScrolled(true)
         setIsInitialSlideIn(true)
-        const windowHeight = window.innerHeight
-        const menuHeight = menuRef.current?.offsetHeight || 0
-        setPosition({ x: 14, y: windowHeight - menuHeight - 14 })
+        
+        if (isMobileNow) {
+          // On mobile, slide to top, left aligned to margin
+          setPosition({ x: 7, y: 7 })
+        } else {
+          // On desktop, slide to bottom
+          setPosition({ x: 14, y: windowHeight - menuHeight - 14 })
+        }
         
         // Remove initial-slide-in class after animation completes
         setTimeout(() => {
           setIsInitialSlideIn(false)
+        }, 800)
+      } else if (hasScrolled && window.scrollY === 0 && isMobileNow) {
+        // Slide out when scrolling back to top (mobile only)
+        setIsInitialSlideIn(true)
+        
+        // On mobile, slide back above viewport
+        setPosition({ x: 7, y: -menuHeight - 20 })
+        
+        // Remove initial-slide-in class and reset hasScrolled after animation completes
+        setTimeout(() => {
+          setIsInitialSlideIn(false)
+          setHasScrolled(false)
         }, 800)
       }
     }
@@ -133,11 +180,36 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
     }
   }
 
+  // Helper function to get the USDZ model URL based on selected color
+  const getModelUrlUsdz = (product: Product, color: ColorVariant): string | null => {
+    switch (color) {
+      case 'red':
+        return product.model3dRedUsdz?.asset.url || null
+      case 'grey':
+        return product.model3dGreyUsdz?.asset.url || null
+      case 'green':
+        return product.model3dGreenUsdz?.asset.url || null
+      default:
+        return null
+    }
+  }
+
+  // Helper function to set active model and USDZ model
+  const setActiveModels = (product: Product, color: ColorVariant) => {
+    const modelUrl = getModelUrl(product, color)
+    const modelUrlUsdz = getModelUrlUsdz(product, color)
+    if (modelUrl) {
+      setActiveModel(modelUrl)
+      setActiveModelUsdz(modelUrlUsdz)
+    }
+  }
+
   const snapToCorner = (x: number, y: number) => {
     const windowWidth = window.innerWidth
     const windowHeight = window.innerHeight
     const menuWidth = menuRef.current?.offsetWidth || 0
     const menuHeight = menuRef.current?.offsetHeight || 0
+    const isMobile = windowWidth <= 767
 
     const centerX = x + menuWidth / 2
     const centerY = y + menuHeight / 2
@@ -145,10 +217,15 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
     const isLeft = centerX < windowWidth / 2
     const isTop = centerY < windowHeight / 2
 
-    const newX = isLeft ? 14 : windowWidth - menuWidth - 14
-    const newY = isTop ? 14 : windowHeight - menuHeight - 14
-
-    return { x: newX, y: newY }
+    if (isMobile) {
+      // On mobile, always snap to left margin
+      const newY = isTop ? 7 : windowHeight - menuHeight - 7
+      return { x: 7, y: newY }
+    } else {
+      const newX = isLeft ? 14 : windowWidth - menuWidth - 14
+      const newY = isTop ? 14 : windowHeight - menuHeight - 14
+      return { x: newX, y: newY }
+    }
   }
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -222,9 +299,10 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
         <div className="menu-content">
           <img 
             src="/logo/logo2.svg" 
-            alt="Menu Logo" 
+            alt="FAMM Design Studio Menu" 
             draggable="false"
             onDragStart={(e) => e.preventDefault()}
+            loading="lazy"
           />
           <div className="menu-buttons">
             <button 
@@ -232,68 +310,40 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
               onClick={(e) => {
                 e.stopPropagation()
                 
-                // Enable debug on mobile
-                if (window.innerWidth <= 767) {
-                  setShowDebug(true)
-                }
-                
-                let debug = `Button clicked\n`
-                
                 if (hasDraggedRef.current) {
                   hasDraggedRef.current = false
-                  debug += 'BLOCKED: Was dragging\n'
-                  setDebugInfo(debug)
                   return
                 }
                 
-                debug += `Products: ${products.length}\n`
-                debug += `ActiveModel: ${activeModel ? 'Yes' : 'No'}\n`
-                debug += `ModelVisible: ${modelVisible}\n`
-                debug += `SelectedColor: ${selectedColor}\n`
-                
                 if (activeModel) {
                   setModelVisible(!modelVisible)
-                  debug += `Action: Toggle to ${!modelVisible ? 'ON' : 'OFF'}\n`
                 } else {
                   // If no model is active, load the first product
                   if (products.length > 0) {
                     const firstProduct = products[0]
-                    debug += `First product: ${firstProduct.title}\n`
                     
                     // Try to find any available model variant
                     let modelUrl = getModelUrl(firstProduct, selectedColor)
-                    let colorToUse = selectedColor
                     
                     if (!modelUrl) {
-                      debug += `No ${selectedColor} model, trying others...\n`
                       // Try red, grey, green in order
                       const colors: ColorVariant[] = ['red', 'grey', 'green']
                       for (const color of colors) {
                         modelUrl = getModelUrl(firstProduct, color)
                         if (modelUrl) {
-                          colorToUse = color
                           setSelectedColor(color)
-                          debug += `Found ${color} model!\n`
                           break
                         }
                       }
                     }
                     
                     if (modelUrl) {
-                      debug += `Loading model: ${modelUrl.substring(0, 50)}...\n`
                       setActiveProductId(firstProduct._id)
-                      setActiveModel(modelUrl)
+                      setActiveModels(firstProduct, selectedColor)
                       setModelVisible(true)
-                      debug += 'SUCCESS: Model set to visible\n'
-                    } else {
-                      debug += 'ERROR: No 3D model found!\n'
                     }
-                  } else {
-                    debug += 'ERROR: No products loaded\n'
                   }
                 }
-                
-                setDebugInfo(debug)
               }}
             >
               3D View: {modelVisible ? 'On' : 'Off'}
@@ -316,7 +366,7 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
             <button 
               className="menu-button"
               style={{
-                backgroundColor: modelVisible && selectedColor === 'red' ? '#FF0000' : 'white',
+                backgroundColor: modelVisible && selectedColor === 'red' ? '#772524' : 'white',
                 color: modelVisible && selectedColor === 'red' ? 'transparent' : '#000',
               }}
               onClick={(e) => {
@@ -330,11 +380,8 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
                 if (activeProductId) {
                   const product = products.find(p => p._id === activeProductId)
                   if (product) {
-                    const modelUrl = getModelUrl(product, 'red')
-                    if (modelUrl) {
-                      setActiveModel(modelUrl)
-                      setModelVisible(true)
-                    }
+                    setActiveModels(product, 'red')
+                    setModelVisible(true)
                   }
                 }
               }}
@@ -344,7 +391,7 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
             <button 
               className="menu-button"
               style={{
-                backgroundColor: modelVisible && selectedColor === 'grey' ? '#808080' : 'white',
+                backgroundColor: modelVisible && selectedColor === 'grey' ? '#ACB2B4' : 'white',
                 color: modelVisible && selectedColor === 'grey' ? 'transparent' : '#000',
               }}
               onClick={(e) => {
@@ -358,21 +405,18 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
                 if (activeProductId) {
                   const product = products.find(p => p._id === activeProductId)
                   if (product) {
-                    const modelUrl = getModelUrl(product, 'grey')
-                    if (modelUrl) {
-                      setActiveModel(modelUrl)
-                      setModelVisible(true)
-                    }
+                    setActiveModels(product, 'grey')
+                    setModelVisible(true)
                   }
                 }
               }}
             >
-              Grey
+              Steel
             </button>
             <button 
               className="menu-button"
               style={{
-                backgroundColor: modelVisible && selectedColor === 'green' ? '#00FF00' : 'white',
+                backgroundColor: modelVisible && selectedColor === 'green' ? '#243225' : 'white',
                 color: modelVisible && selectedColor === 'green' ? 'transparent' : '#000',
               }}
               onClick={(e) => {
@@ -386,11 +430,8 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
                 if (activeProductId) {
                   const product = products.find(p => p._id === activeProductId)
                   if (product) {
-                    const modelUrl = getModelUrl(product, 'green')
-                    if (modelUrl) {
-                      setActiveModel(modelUrl)
-                      setModelVisible(true)
-                    }
+                    setActiveModels(product, 'green')
+                    setModelVisible(true)
                   }
                 }
               }}
@@ -399,48 +440,15 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
             </button>
           </div>
           <div className="menu-buttons">
-            <button 
-              className={`menu-button menu-button-full ${showInfo ? 'info-expanded' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation()
-                if (hasDraggedRef.current) {
-                  hasDraggedRef.current = false
-                  return
-                }
-                setShowInfo(!showInfo)
-              }}
-            >
-              {showInfo ? (
-                "Since 1839, the Basler Kunstverein hasn't just shown art; it has continually redefined it. With an unwavering commitment to emerging artists, the Basler Kunstverein initiated the construction of Kunsthalle Basel, which opened its doors to the public in 1872. To this day, Kunsthalle Basel continues to bring groundbreaking artistic positions to the forefront, long before they make it big elsewhere."
-              ) : (
-                "Information"
-              )}
-            </button>
-          </div>
-          <div className="menu-buttons">
-            <button 
+            <a 
+              href="mailto:info@f-a-m-m.com"
               className="menu-button menu-button-full"
               onClick={(e) => {
                 e.stopPropagation()
-                if (hasDraggedRef.current) {
-                  hasDraggedRef.current = false
-                  return
-                }
-                setShowDebug(true)
-                const info = `
-DEBUG INFO
-Products loaded: ${products.length}
-Titles: ${products.map(p => p.title).join(', ')}
-ActiveModel: ${activeModel ? 'Yes' : 'No'}
-ModelVisible: ${modelVisible}
-SelectedColor: ${selectedColor}
-ActiveProductId: ${activeProductId || 'None'}
-                `.trim()
-                setDebugInfo(info)
               }}
             >
-              Debug Info (Mobile)
-            </button>
+              Inquire for a project
+            </a>
           </div>
         </div>
         {products.length > 0 && (
@@ -463,7 +471,7 @@ ActiveProductId: ${activeProductId || 'None'}
                     } else {
                       // Different product, load it and show it
                       setActiveProductId(product._id)
-                      setActiveModel(modelUrl)
+                      setActiveModels(product, selectedColor)
                       setModelVisible(true)
                     }
                   }
@@ -472,10 +480,11 @@ ActiveProductId: ${activeProductId || 'None'}
               >
                 <img
                   src={product.svgOutline?.asset.url}
-                  alt={product.title}
+                  alt={`${product.title} - Product design by FAMM Design Studio`}
                   className="product-outline-svg-inline"
                   draggable="false"
                   onDragStart={(e) => e.preventDefault()}
+                  loading="lazy"
                 />
               </div>
             ))}
@@ -484,40 +493,13 @@ ActiveProductId: ${activeProductId || 'None'}
       </div>
       {activeModel && (
         <Model3DViewer 
-          modelUrl={activeModel} 
+          modelUrl={activeModel}
+          modelUrlUsdz={activeModelUsdz || undefined}
           onClose={() => setModelVisible(false)}
           isAxonometric={isAxonometric}
           visible={modelVisible}
+          lightMultiplier={activeProductId ? products.find(p => p._id === activeProductId)?.lightMultiplier ?? 1.0 : 1.0}
         />
-      )}
-      {showDebug && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            border: '2px solid black',
-            padding: '20px',
-            zIndex: 99999,
-            fontFamily: 'monospace',
-            fontSize: '12px',
-            whiteSpace: 'pre-wrap',
-            maxWidth: '90vw',
-            maxHeight: '80vh',
-            overflow: 'auto'
-          }}
-          onClick={(e) => {
-            e.stopPropagation()
-            setShowDebug(false)
-          }}
-        >
-          <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>
-            DEBUG INFO (tap to close)
-          </div>
-          {debugInfo}
-        </div>
       )}
     </>
   )

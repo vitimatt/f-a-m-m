@@ -424,12 +424,14 @@ a.menu-button {
 @media (max-width: 767px) {
   html {
     overflow-x: hidden;
+    overflow-y: auto;
     max-width: 100vw;
   }
 
   body {
     font-size: 15px;
     overflow-x: hidden;
+    overflow-y: auto;
     max-width: 100vw;
   }
 

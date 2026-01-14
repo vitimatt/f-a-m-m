@@ -37,7 +37,17 @@ interface DraggableMenuProps {
 }
 
 export default function DraggableMenu({ initialProducts = [] }: DraggableMenuProps) {
-  const [position, setPosition] = useState({ x: 14, y: typeof window !== 'undefined' ? window.innerHeight + 500 : 2000 })
+  const [position, setPosition] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth <= 767
+      if (isMobile) {
+        // Start just above viewport on mobile
+        return { x: 7, y: -200 }
+      }
+      return { x: 14, y: window.innerHeight + 500 }
+    }
+    return { x: 14, y: 2000 }
+  })
   const [isDragging, setIsDragging] = useState(false)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [products, setProducts] = useState<Product[]>(initialProducts)
@@ -94,10 +104,10 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
     if (!isInitialized && menuRef.current) {
       const windowHeight = window.innerHeight
       const menuHeight = menuRef.current.offsetHeight || 0
-      const isMobile = window.innerWidth <= 767
-      if (isMobile) {
-        // On mobile, start above viewport, left aligned to margin
-        setPosition({ x: 7, y: -menuHeight - 20 })
+      const isMobileNow = window.innerWidth <= 767
+      if (isMobileNow) {
+        // On mobile, start just above viewport to ensure it's completely hidden
+        setPosition({ x: 7, y: -menuHeight - 10 })
       } else {
         // On desktop, start below viewport
         setPosition({ x: 14, y: windowHeight + 20 })
@@ -114,7 +124,8 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
         const menuHeight = menuRef.current.offsetHeight || 0
         const isMobileNow = window.innerWidth <= 767
         if (isMobileNow) {
-          setPosition({ x: 7, y: -menuHeight - 20 })
+          // Ensure menu stays just above viewport on mobile
+          setPosition({ x: 7, y: -menuHeight - 10 })
         } else {
           setPosition({ x: 14, y: windowHeight + 20 })
         }
@@ -153,8 +164,8 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
         // Slide out when scrolling back to top (mobile only)
         setIsInitialSlideIn(true)
         
-        // On mobile, slide back above viewport
-        setPosition({ x: 7, y: -menuHeight - 20 })
+        // On mobile, slide back just above viewport to ensure it's completely hidden
+        setPosition({ x: 7, y: -menuHeight - 10 })
         
         // Remove initial-slide-in class and reset hasScrolled after animation completes
         setTimeout(() => {

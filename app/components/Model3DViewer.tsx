@@ -172,7 +172,7 @@ function Model({ url, isAxonometric, isMobile, onError, retryKey }: { url: strin
 
   try {
     return (
-      <Center key={`${isAxonometric}`}>
+      <Center key={`${url}-${isAxonometric}`}>
         <group ref={groupRef}>
           <primitive object={gltf.scene.clone()} scale={scale} rotation={[0, Math.PI, 0]} />
         </group>
@@ -306,7 +306,6 @@ export default function Model3DViewer({ modelUrl, onClose, isAxonometric, visibl
       <div className="model-viewer-overlay" style={{ display: visible ? 'flex' : 'none', pointerEvents: visible ? 'auto' : 'none' }}>
         <div className="model-viewer-container">
           <Canvas 
-              key={`canvas-${modelUrl}`}
             camera={isAxonometric ? { position: [0, 0, 1] } : { position: [0, 0, 1], fov: 50 }} 
             style={{ background: 'transparent', pointerEvents: isMobile ? 'none' : 'auto' }}
             orthographic={isAxonometric}
@@ -363,7 +362,7 @@ export default function Model3DViewer({ modelUrl, onClose, isAxonometric, visibl
               }
             >
               <Model 
-                key={`model-${retryKey}`}
+                key={`model-${modelUrl}-${retryKey}`}
                 url={modelUrl} 
                 isAxonometric={isAxonometric} 
                 isMobile={isMobile}

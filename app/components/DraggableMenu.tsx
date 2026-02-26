@@ -41,8 +41,8 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
     if (typeof window !== 'undefined') {
       const isMobile = window.innerWidth <= 767
       if (isMobile) {
-        // Start just above viewport on mobile
-        return { x: 7, y: -200 }
+        // Start fully above viewport - use large negative value so menu is always hidden
+        return { x: 7, y: -(window.innerHeight + 500) }
       }
       return { x: 14, y: window.innerHeight + 500 }
     }
@@ -102,17 +102,26 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
   // Initialize position at bottom left, hidden below viewport (or above on mobile)
   useEffect(() => {
     if (!isInitialized && menuRef.current) {
-      const windowHeight = window.innerHeight
-      const menuHeight = menuRef.current.offsetHeight || 0
-      const isMobileNow = window.innerWidth <= 767
-      if (isMobileNow) {
-        // On mobile, start just above viewport to ensure it's completely hidden
-        setPosition({ x: 7, y: -menuHeight - 10 })
-      } else {
-        // On desktop, start below viewport
-        setPosition({ x: 14, y: windowHeight + 20 })
+      const updatePosition = () => {
+        if (!menuRef.current) return
+        const windowHeight = window.innerHeight
+        const menuHeight = menuRef.current.offsetHeight || 0
+        const isMobileNow = window.innerWidth <= 767
+        if (isMobileNow) {
+          // Only update when we have valid height - avoid 0 which would show menu
+          if (menuHeight > 0) {
+            setPosition({ x: 7, y: -menuHeight - 10 })
+          }
+        } else {
+          setPosition({ x: 14, y: windowHeight + 20 })
+        }
+        setIsInitialized(true)
       }
-      setIsInitialized(true)
+      // Wait for layout - menu may not have correct height on first paint
+      const id = requestAnimationFrame(() => {
+        requestAnimationFrame(updatePosition)
+      })
+      return () => cancelAnimationFrame(id)
     }
   }, [isInitialized, products])
 
@@ -124,8 +133,10 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
         const menuHeight = menuRef.current.offsetHeight || 0
         const isMobileNow = window.innerWidth <= 767
         if (isMobileNow) {
-          // Ensure menu stays just above viewport on mobile
-          setPosition({ x: 7, y: -menuHeight - 10 })
+          // Ensure menu stays just above viewport on mobile (only if we have valid height)
+          if (menuHeight > 0) {
+            setPosition({ x: 7, y: -menuHeight - 10 })
+          }
         } else {
           setPosition({ x: 14, y: windowHeight + 20 })
         }

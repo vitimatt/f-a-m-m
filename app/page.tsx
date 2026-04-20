@@ -105,7 +105,7 @@ export default async function Home() {
     '@type': 'Organization',
     name: 'FAMM',
     alternateName: ['FAMM Design Studio', 'f-a-m-m', 'Famm Design'],
-    description: 'FAMM, product design collective founded in 2024 working across industrial design and creative fields. Based in Milan, founded by Matteo Bulla, Matteo Corradini, Federico Fanucchi & Andrea Mastroianni.',
+    description: 'Product design collective working across industrial and creative fields.',
     foundingDate: '2024',
     url: process.env.NEXT_PUBLIC_SITE_URL || 'https://f-a-m-m.com',
     address: {
@@ -151,12 +151,12 @@ export default async function Home() {
           FAMM - Product Design Collective | Industrial Design Milano
         </h1>
         <h2 className="visually-hidden">
-          FAMM, product design collective founded in 2024 working across industrial design and creative fields. Based in Milan, founded by Matteo Bulla, Matteo Corradini, Federico Fanucchi & Andrea Mastroianni.
+          Product design collective working across industrial and creative fields.
         </h2>
         
         {/* SEO: Subtitle text for search engines (hidden but readable) */}
         <p className="visually-hidden">
-          FAMM, product design collective founded in 2024 working across industrial design and creative fields. Based in Milan, founded by Matteo Bulla, Matteo Corradini, Federico Fanucchi & Andrea Mastroianni.
+          Product design collective working across industrial and creative fields.
         </p>
         
         <img 

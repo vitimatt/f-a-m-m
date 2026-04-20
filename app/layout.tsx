@@ -5,7 +5,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'FAMM - Next.js + Sanity',
+  title: 'FAMM',
   description: 'A Next.js project with embedded Sanity Studio',
 }
 

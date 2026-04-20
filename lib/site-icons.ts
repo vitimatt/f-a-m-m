@@ -4,12 +4,15 @@ import type { Metadata } from 'next'
 
 const faviconDir = path.join(process.cwd(), 'public', 'favicon')
 
-/** Drop assets in public/favicon/: favicon.ico, icon.png, icon.svg, apple-touch-icon.png */
+/** Drop assets in public/favicon/: favicon.ico, favicon-famm.png, icon.png, icon.svg, apple-touch-icon.png */
 export function getFaviconMetadata(): Metadata['icons'] {
   const icon: { url: string; sizes?: string; type?: string }[] = []
 
   if (fs.existsSync(path.join(faviconDir, 'favicon.ico'))) {
     icon.push({ url: '/favicon/favicon.ico', sizes: '48x48' })
+  }
+  if (fs.existsSync(path.join(faviconDir, 'favicon-famm.png'))) {
+    icon.push({ url: '/favicon/favicon-famm.png', type: 'image/png', sizes: '32x32' })
   }
   if (fs.existsSync(path.join(faviconDir, 'icon.png'))) {
     icon.push({ url: '/favicon/icon.png', type: 'image/png', sizes: '32x32' })

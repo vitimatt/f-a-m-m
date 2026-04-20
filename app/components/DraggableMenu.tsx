@@ -453,7 +453,7 @@ export default function DraggableMenu({ initialProducts = [] }: DraggableMenuPro
           )}
           <div className="menu-buttons">
             <a 
-              href="mailto:fammdesign00@gmail.com"
+              href="mailto:info@famm.works"
               className="menu-button menu-button-full"
               onClick={(e) => {
                 e.stopPropagation()

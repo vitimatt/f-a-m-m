@@ -149,4 +149,3 @@ export default function TypingText({ text, className = '', delay = 2000, speed =
     </p>
   )
 }
-
